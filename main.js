@@ -1,115 +1,157 @@
 // version: v0.0.1
 
-let square = null;
-let area = null;
+
+// let area = null;
 let concaveCount = 0;
 let ONE_MINIUTE = 60;
-let timerId; // 타이머 ID를 저장할 변수
+let timerId = null; // 타이머 ID를 저장할 변수
 let temp = null;
 let blackArray = [];
 let whiteArray = [];
-let NUM_OMOK = 5;
+const NUM_OMOK = 5;
 let winFlag = false;
+
 document.addEventListener('DOMContentLoaded', () => {
-    let board = document.querySelector(".board");
-
-    let timerImgContainer = document.createElement("div");
-    timerImgContainer.classList.add("timerImgContainer");
-    board.appendChild(timerImgContainer);
-
-    // 초기 타이머 설정
-    startTimer(board);
-
-    for (let i = 0; i < 19; i++) {
-        for (let j = 0; j < 19; j++) {
-            square = document.createElement("li");
-            square.setAttribute("class", "square");
-            square.setAttribute("rows", (i + 1));
-            square.setAttribute("columns", (j + 1));
-            board.appendChild(square);
-
-            area = document.createElement("div");
-            area.setAttribute("class", "area");
-            area.setAttribute("rows", (i + 1));
-            area.setAttribute("columns", (j + 1));
-            square.appendChild(area);
-
-            putConcave(area);
-        }
-    }
+    startGame();
 });
 
+class OmokGame {
+    constructor(boardSelector) {
+        this.boardSize = 19;
+        this.board = document.querySelector(boardSelector);
+        this.timer = new Timer(this.board);
+        // console.log(this.board);
+        // this.board.appendChild(this.timer);
+        this.createBoard();
+    }
+    clear() {
+        this.square = null;
+        this.area = null;
+    }
+
+    createBoard() {
+        for (let i = 0; i < this.boardSize; i++) {
+            for (let j = 0; j < this.boardSize; j++) {
+                const square = this.createSquare(i, j);
+                this.board.appendChild(square);
+            }
+        }
+    }
+
+    createSquare(i, j) {
+        const square = document.createElement("li");
+        square.setAttribute("class", "square");
+        square.setAttribute("rows", (i + 1));
+        square.setAttribute("columns", (j + 1));
+
+        const area = document.createElement("div");
+        area.setAttribute("class", "area");
+        area.setAttribute("rows", (i + 1));
+        area.setAttribute("columns", (j + 1));
+        
+        square.appendChild(area);
+        this.putConcave(area);
+
+        return square;
+    }
+
+    putConcave(area) {
+        area.addEventListener("mousedown", (e) => {
+            let impossible = checkAlreadyPutConcave(e);
+            if (temp && impossible) {
+                temp.classList.remove("latestPut");
+            }
+            if (impossible) {
+                let rows = e.target.getAttribute("rows");
+                let columns = e.target.getAttribute("columns");
+                if (concaveCount % 2 === 0) {
+                    e.target.classList.add("blackStone");
+                    blackArray.push({rows: rows, columns: columns });
+                } else {
+                    e.target.classList.add("whiteStone");
+                    whiteArray.push({rows: parseInt(rows), columns: parseInt(columns) });
+                }
+                concaveCount++;
+    
+                // TODO: 승리했는지 체크
+                if (winFlag) {
+                    return;
+                }
+    
+                checkWin();
+                // checkVertical();
+                // diagonalCheck();
+                // clearInterval();
+                startTimer();
+                e.target.classList.add("latestPut");
+                temp = e.target;
+            }
+        });
+    }
+}
+
+class Timer {
+    constructor(parentElement) {
+        console.log(parentElement);
+        this.timerImgContainer = this.createTimerImgContainer();
+        this.newTimer = this.createNewTimer();
+        parentElement.appendChild(this.timerImgContainer);
+        parentElement.appendChild(this.newTimer);
+    }
+
+    createTimerImgContainer() {
+        const container = document.createElement("div");
+        container.classList.add("timerImgContainer");
+        return container;
+    }
+    
+    createNewTimer() {
+        const newTimer = document.createElement("div");
+        newTimer.classList.add("timer");
+        return newTimer;
+    }
+}
+
+function startGame() {
+    let omok = new OmokGame('.board');
+    // omok.makeConcavePlate();
+    // 초기 타이머 설정
+    startTimer();
+}
 
 function startTimer() {
-    let board = document.querySelector(".board");
-    let timerImgContainer = document.querySelector(".timerImgContainer");
-
-    // 기존 타이머 중지
     if (timerId) {
-        let originTimer = document.querySelector(".timer");
-        let originTimerImg = document.querySelector(".timerImg");
-        timerImgContainer.removeChild(originTimerImg);
-        board.removeChild(originTimer);
+        // 기존 타이머 중지
+        console.log(timerId);
         clearInterval(timerId);
+        document.querySelector(".timerImg").remove();
     }
-    // 새로운 타이머 설정
-    let newTimer = document.createElement("div");
+    let timerImgContainer = document.querySelector(".timerImgContainer");
     let newTimerImg = document.createElement("img");
     newTimerImg.classList.add("timerImg");
     newTimerImg.src = './timer.svg';
-    let remainSeconds = ONE_MINIUTE
 
+    timerImgContainer.appendChild(newTimerImg);
+    let remainSeconds = ONE_MINIUTE
+    let timerDisplay = document.querySelector('.timer');
     timerId = setInterval(() => {
-        newTimer.innerHTML = remainSeconds;
+        timerDisplay.innerHTML = remainSeconds;
+        
         if (remainSeconds < 20 && remainSeconds > 10) {
-            newTimerImg.setAttribute("class", "shake");
-        }
-        if (remainSeconds < 10 && remainSeconds > 1) {
-            newTimerImg.removeAttribute("shake");
-            newTimerImg.setAttribute("class", "hard-shake");
-        }
-        if (remainSeconds < 1) {
+            newTimerImg.classList.add("shake");
+        } else if (remainSeconds < 10 && remainSeconds > 1) {
+            newTimerImg.classList.remove("shake");
+            newTimerImg.classList.add("hard-shake");
+            // newTimerImg.setAttribute("class", "hard-shake");
+        } else if (remainSeconds < 0.1) {
             remainSeconds = ONE_MINIUTE;
+            alert("시간 초과");
         }
         remainSeconds--;
     }, 1000);
-    newTimer.setAttribute("class", "timer");
-
-    timerImgContainer.appendChild(newTimerImg);
-    board.appendChild(newTimer);
 }
 
-function putConcave(area) {
-    area.addEventListener("mousedown", (e) => {
-        let impossible = checkAlreadyPutConcave(e);
-        if (temp && impossible) {
-            temp.classList.remove("latestPut");
-        }
-        if (impossible) {
-            let rows = e.target.getAttribute("rows");
-            let columns = e.target.getAttribute("columns");
-            if (concaveCount % 2 === 0) {
-                e.target.classList.add("blackStone");
-                blackArray.push({row: rows, column: columns });
-            } else {
-                e.target.classList.add("whiteStone");
-                whiteArray.push({row: rows, columns: columns });
-            }
-            concaveCount++;
 
-            // TODO: 승리했는지 체크
-            console.log("윈 : "+winFlag);
-            if (winFlag) {
-                return;
-            }
-
-            checkWin();
-            startTimer();
-            e.target.classList.add("latestPut");
-            temp = e.target;
-        }
-    });
-}
 
 function checkAlreadyPutConcave(e) {
     if (e.target.classList.contains('blackStone') || e.target.classList.contains('whiteStone')) {
@@ -123,51 +165,98 @@ function checkAlreadyPutConcave(e) {
 function checkWin(e) {
     // 바둑알을 row별로 분류하는 로직
     let groupedByRow = whiteArray.reduce((acc, stone) => {
-        if (!acc[stone.row]) {
-            acc[stone.row] = [];
+        if (!acc[stone.rows]) {
+            acc[stone.rows] = [];
         }
-        acc[stone.row].push(parseInt(stone.columns));
+        acc[stone.rows].push(parseInt(stone.columns));
         return acc;
     }, {});
 
-    // console.log(groupedByRow);
-
-    // groupedByRow.forEach((value) => {
-    //     console.log(value);
-    // })
     for (let row in groupedByRow) {
-        
-        console.log("로우 : "+row);
         let columns = groupedByRow[row];
-        console.log(columns);
-        let sum = 0;
-        for (let i= 1; i < columns.length; i++) {
-            console.log(columns[i]);
-            if (columns[i] === columns[i-1] + 1) {
-                sum+=1;
-                if (sum === (NUM_OMOK - 1)) {
-                    winFlag = true;
-                    alert("승리");
+        columns.sort((a, b) => a - b);
 
-                    return;
-                }
+        let sum = 1;
+        for (let i=1; i < columns.length; i++) {
+            if (columns[i] === (columns[i-1] + 1)) {
+                sum += 1;
+            } else {
+                sum = 1;
             }
         }
-        console.log(sum);
-    }
-    console.log("--------------");
-
-    /* whiteArray.sort((a, b) => {
-        return parseInt(a.row) - parseInt(b.row);
-    });
-    console.log(whiteArray);
-    // 가로체크
-    for (let coordinate of whiteArray) {
-        let rows = coordinate.row;
-        console.log(rows);
-        let consecutiveCount = 1;
-        for (let i = 1; i < rows.length; i++) {
-            console.log(rows[i]);
+        if (sum === NUM_OMOK) {
+            winFlag = true;
+            alert("승리");
+            console.log("다시시작");
+            let omok = new OmokGame();
+            // omok.makeConcavePlate();
+            omok.clear();
+            // omok.clear();
+            // startGame();
+            // return;
         }
-    }   */
+    }
+
+    // 대각선 체크
+    for (let stone of whiteArray) {
+        const row = stone.rows;
+        const col = stone.columns;
+        if (checkDiagonalWin(row, col)) {
+            winFlag = true;
+            alert('승리');
+            return;
+        }
+    }
+}
+
+function checkVertical(e) {
+    let groupedByColumn = whiteArray.reduce((acc, stone) => {
+        if (!acc[stone.columns]) {
+            acc[stone.columns] = [];
+        }
+        acc[stone.columns].push(parseInt(stone.rows));
+        return acc;
+    }, {});
+
+    for (let column in groupedByColumn) {
+        let rows = groupedByColumn[column];
+        rows.sort((a, b) => a - b);
+        let sum = 1;
+        for (let i=1; i < rows.length; i++) {
+            if (rows[i] === rows[i-1] + 1) {
+                sum+=1;
+            }
+        }
+        if (sum === NUM_OMOK) {
+            winFlag = true;
+            alert("승리");
+            return;
+        }
+    }
+}
+
+function checkDiagonalWin(row, col) {
+    return checkDiagnol(row, col, 1, 1) || checkDiagnol(row, col, 1, -1);
+}
+
+function checkDiagnol(startRow, startCol, rowDir, colDir) {
+    let player = whiteArray.find(stone => stone.rows === startRow && stone.columns === startCol);
+    if (!player) return false;
+
+    let count = 0;
+
+    // 대각선 체크
+    for (let i = -NUM_OMOK + 1; i < NUM_OMOK; i++) {
+        const row = parseInt(startRow) + (i * rowDir);
+        const col = parseInt(startCol) + (i * colDir);
+        if (whiteArray.find(stone => stone.rows === row && stone.columns === col)) {
+            count++;
+            if (count === NUM_OMOK) {
+                return true;
+            }
+        } else {
+            count = 0;
+        }
+    }
+    return false;
 }
