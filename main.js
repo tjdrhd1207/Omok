@@ -1,4 +1,4 @@
-// version: v0.0.1
+// version: v0.0.3
 
 
 // let area = null;
@@ -20,8 +20,6 @@ class OmokGame {
         this.boardSize = 19;
         this.board = document.querySelector(boardSelector);
         this.timer = new Timer(this.board);
-        // console.log(this.board);
-        // this.board.appendChild(this.timer);
         this.createBoard();
     }
     clear() {
@@ -82,6 +80,8 @@ class OmokGame {
                 // checkVertical();
                 // diagonalCheck();
                 // clearInterval();
+                checkOmok(columns);
+                checkOmok(rows);
                 startTimer();
                 e.target.classList.add("latestPut");
                 temp = e.target;
@@ -218,8 +218,11 @@ function checkVertical(e) {
         return acc;
     }, {});
 
-    for (let column in groupedByColumn) {
-        let rows = groupedByColumn[column];
+    for (let columns in groupedByColumn) {
+        console.log("무엇?");
+        console.log(columns);
+
+        let rows = groupedByColumn[columns];
         rows.sort((a, b) => a - b);
         let sum = 1;
         for (let i=1; i < rows.length; i++) {
@@ -235,9 +238,50 @@ function checkVertical(e) {
     }
 }
 
+function checkOmok(color) {
+    const hasConsecutiveNumbers = (numbers) => {
+        numbers.sort((a, b) => a - b);
+        let count = 1;
+        for( let i=1; i < numbers.length; i++) {
+            if (numbers[i] === numbers[i-1] + 1) {
+                count += 1;
+            } else {
+                count = 1;
+            }
+        }
+        return false;
+    };
+
+    // 가로와 세로 방향을 체크하는 함수
+    const checkDirection = (getDirection, getReverseDirection) => {
+        let grouped = color.reduce((acc, stone) => {
+            let key = getDirection(stone);
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(parseInt(getReverseDirection(stone)));
+            return acc;
+        }, {});
+
+        for (let key in grouped) {
+            if (hasConsecutiveNumbers(grouped[key])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if(checkDirection(stone => stone.rows, stone => stone.columns) || checkDirection(stone => stone.columns, stone => stone.rows)) {
+        alert("승리");
+        let omok = new OmokGame();
+        return true;
+    }
+}
+
 function checkDiagonalWin(row, col) {
     return checkDiagnol(row, col, 1, 1) || checkDiagnol(row, col, 1, -1);
 }
+
 
 function checkDiagnol(startRow, startCol, rowDir, colDir) {
     let player = whiteArray.find(stone => stone.rows === startRow && stone.columns === startCol);
