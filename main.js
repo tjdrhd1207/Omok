@@ -1,7 +1,7 @@
-// version: v0.0.3
+// version: v0.0.4
 
+// TODO: 대각선 안되는 문제 해결해야함ㄴ
 
-// let area = null;
 let concaveCount = 0;
 let ONE_MINIUTE = 60;
 let timerId = null; // 타이머 ID를 저장할 변수
@@ -65,9 +65,11 @@ class OmokGame {
                 if (concaveCount % 2 === 0) {
                     e.target.classList.add("blackStone");
                     blackArray.push({rows: rows, columns: columns });
+                    checkOmok(blackArray);
                 } else {
                     e.target.classList.add("whiteStone");
                     whiteArray.push({rows: parseInt(rows), columns: parseInt(columns) });
+                    checkOmok(whiteArray);
                 }
                 concaveCount++;
     
@@ -76,12 +78,12 @@ class OmokGame {
                     return;
                 }
     
-                checkWin();
+                // checkWin();
                 // checkVertical();
                 // diagonalCheck();
                 // clearInterval();
-                checkOmok(columns);
-                checkOmok(rows);
+                
+                
                 startTimer();
                 e.target.classList.add("latestPut");
                 temp = e.target;
@@ -92,7 +94,6 @@ class OmokGame {
 
 class Timer {
     constructor(parentElement) {
-        console.log(parentElement);
         this.timerImgContainer = this.createTimerImgContainer();
         this.newTimer = this.createNewTimer();
         parentElement.appendChild(this.timerImgContainer);
@@ -113,7 +114,7 @@ class Timer {
 }
 
 function startGame() {
-    let omok = new OmokGame('.board');
+    new OmokGame('.board');
     // omok.makeConcavePlate();
     // 초기 타이머 설정
     startTimer();
@@ -121,8 +122,7 @@ function startGame() {
 
 function startTimer() {
     if (timerId) {
-        // 기존 타이머 중지
-        console.log(timerId);
+        // 기존 타이머 새로 세팅
         clearInterval(timerId);
         document.querySelector(".timerImg").remove();
     }
@@ -249,13 +249,19 @@ function checkOmok(color) {
                 count = 1;
             }
         }
+        if (count === NUM_OMOK) {
+            return true;
+        }
         return false;
     };
 
     // 가로와 세로 방향을 체크하는 함수
     const checkDirection = (getDirection, getReverseDirection) => {
         let grouped = color.reduce((acc, stone) => {
+            console.log(color);
+            console.log(getDirection(stone));
             let key = getDirection(stone);
+            console.log(key);
             if (!acc[key]) {
                 acc[key] = [];
             }
@@ -269,6 +275,17 @@ function checkOmok(color) {
             }
         }
         return false;
+    }
+
+    // 대각선 체크
+    for (let stone of color) {
+        const row = stone.rows;
+        const col = stone.columns;
+        if (checkDiagonalWin(row, col)) {
+            winFlag = true;
+            alert('승리');
+            return;
+        }
     }
 
     if(checkDirection(stone => stone.rows, stone => stone.columns) || checkDirection(stone => stone.columns, stone => stone.rows)) {
@@ -288,7 +305,6 @@ function checkDiagnol(startRow, startCol, rowDir, colDir) {
     if (!player) return false;
 
     let count = 0;
-
     // 대각선 체크
     for (let i = -NUM_OMOK + 1; i < NUM_OMOK; i++) {
         const row = parseInt(startRow) + (i * rowDir);
