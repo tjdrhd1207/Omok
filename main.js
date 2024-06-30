@@ -23,8 +23,9 @@ class OmokGame {
         this.createBoard();
     }
     clear() {
-        this.square = null;
-        this.area = null;
+
+        // this.square = null;
+        // this.area = null;
     }
 
     createBoard() {
@@ -64,7 +65,7 @@ class OmokGame {
                 let columns = e.target.getAttribute("columns");
                 if (concaveCount % 2 === 0) {
                     e.target.classList.add("blackStone");
-                    blackArray.push({rows: rows, columns: columns });
+                    blackArray.push({rows: parseInt(rows), columns: parseInt(columns) });
                     checkOmok(blackArray);
                 } else {
                     e.target.classList.add("whiteStone");
@@ -96,6 +97,7 @@ class Timer {
     constructor(parentElement) {
         this.timerImgContainer = this.createTimerImgContainer();
         this.newTimer = this.createNewTimer();
+        console.log(parentElement);
         parentElement.appendChild(this.timerImgContainer);
         parentElement.appendChild(this.newTimer);
     }
@@ -187,10 +189,10 @@ function checkWin(e) {
         if (sum === NUM_OMOK) {
             winFlag = true;
             alert("승리");
-            console.log("다시시작");
-            let omok = new OmokGame();
+            console.log("FAJIJALIJAWILDJ");
+            let omok = new OmokGame('.board');
             // omok.makeConcavePlate();
-            omok.clear();
+            // omok.createBoard();
             // omok.clear();
             // startGame();
             // return;
@@ -258,10 +260,8 @@ function checkOmok(color) {
     // 가로와 세로 방향을 체크하는 함수
     const checkDirection = (getDirection, getReverseDirection) => {
         let grouped = color.reduce((acc, stone) => {
-            console.log(color);
-            console.log(getDirection(stone));
             let key = getDirection(stone);
-            console.log(key);
+            // console.log(key);
             if (!acc[key]) {
                 acc[key] = [];
             }
@@ -281,7 +281,7 @@ function checkOmok(color) {
     for (let stone of color) {
         const row = stone.rows;
         const col = stone.columns;
-        if (checkDiagonalWin(row, col)) {
+        if (checkDiagonalWin(color, row, col)) {
             winFlag = true;
             alert('승리');
             return;
@@ -290,18 +290,21 @@ function checkOmok(color) {
 
     if(checkDirection(stone => stone.rows, stone => stone.columns) || checkDirection(stone => stone.columns, stone => stone.rows)) {
         alert("승리");
-        let omok = new OmokGame();
+        console.log("르르릉ㅇ");
+        let omok = new OmokGame('board');
         return true;
     }
 }
 
-function checkDiagonalWin(row, col) {
-    return checkDiagnol(row, col, 1, 1) || checkDiagnol(row, col, 1, -1);
+function checkDiagonalWin(color, row, col) {
+    return checkDiagnol(color, row, col, 1, 1) || checkDiagnol(color, row, col, 1, -1);
 }
 
 
-function checkDiagnol(startRow, startCol, rowDir, colDir) {
-    let player = whiteArray.find(stone => stone.rows === startRow && stone.columns === startCol);
+function checkDiagnol(color, startRow, startCol, rowDir, colDir) {
+    // console.log("칼라");
+    // console.log(color);
+    let player = color.find(stone => stone.rows === startRow && stone.columns === startCol);
     if (!player) return false;
 
     let count = 0;
@@ -309,14 +312,19 @@ function checkDiagnol(startRow, startCol, rowDir, colDir) {
     for (let i = -NUM_OMOK + 1; i < NUM_OMOK; i++) {
         const row = parseInt(startRow) + (i * rowDir);
         const col = parseInt(startCol) + (i * colDir);
-        if (whiteArray.find(stone => stone.rows === row && stone.columns === col)) {
+        if (color.find(stone =>(stone.rows === row) && (stone.columns === col))) {
             count++;
-            if (count === NUM_OMOK) {
-                return true;
-            }
         } else {
             count = 0;
         }
     }
+    if (count === NUM_OMOK) {
+        return true;
+    }
     return false;
+}
+
+function clearGame() {
+    let omok = new OmokGame();
+    omok.clear();
 }
