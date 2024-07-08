@@ -20,12 +20,53 @@ class OmokGame {
         this.boardSize = 19;
         this.board = document.querySelector(boardSelector);
         this.timer = new Timer(this.board);
+        const tempUser = {
+            userId : '게구맨',
+            userImg : './man_icon.svg'
+        };
+        
+        const tempUser2 = {
+            userId: '게구맨2',
+            userImg : './woman_icon.svg'
+        };
+
+        this.user = new User(tempUser);
+        this.user2 = new User(tempUser2);
+        this.setUserContainer(this.user, this.user2);
         this.createBoard();
     }
     clear() {
 
         // this.square = null;
         // this.area = null;
+    }
+
+    setUserContainer(user1, user2) {
+        const userContainer = document.createElement("div");
+        userContainer.classList.add("userContainer");
+        this.board.appendChild(userContainer);
+
+        const firstUserContainer = document.createElement("div");
+        const userName = document.createElement("span");
+        const userImg = document.createElement("img");
+        userName.innerHTML = user1.userId;
+        userImg.setAttribute("src", user1.userImg);
+        userImg.setAttribute("class", "userImg");
+        firstUserContainer.append(userImg);
+        firstUserContainer.append(userName);
+        firstUserContainer.classList.add("firstUserContainer");
+        userContainer.appendChild(firstUserContainer);
+
+        const secondUserContainer = document.createElement("div");
+        const user2Name = document.createElement("span");
+        const user2Img = document.createElement("img");
+        user2Name.innerHTML = user2.userId;
+        user2Img.setAttribute("src", user2.userImg);
+        user2Img.setAttribute("class", "userImg");
+        secondUserContainer.append(user2Img);
+        secondUserContainer.append(user2Name);
+        secondUserContainer.classList.add("secondUserContainer");
+        userContainer.appendChild(secondUserContainer);
     }
 
     createBoard() {
@@ -97,7 +138,6 @@ class Timer {
     constructor(parentElement) {
         this.timerImgContainer = this.createTimerImgContainer();
         this.newTimer = this.createNewTimer();
-        console.log(parentElement);
         parentElement.appendChild(this.timerImgContainer);
         parentElement.appendChild(this.newTimer);
     }
@@ -112,6 +152,16 @@ class Timer {
         const newTimer = document.createElement("div");
         newTimer.classList.add("timer");
         return newTimer;
+    }
+}
+
+class User {
+    constructor(user) {
+        this.userId = user.userId;
+        this.userImg = user.userImg;
+    }
+    changeTurn() {
+        console.log("턴바꾸기");
     }
 }
 
