@@ -1,4 +1,4 @@
-// version: v0.0.4
+// version: v0.0.5
 
 // TODO: 대각선 안되는 문제 해결해야함ㄴ
 
@@ -35,10 +35,10 @@ class OmokGame {
         this.setUserContainer(this.user, this.user2);
         this.createBoard();
     }
+
+    // TODO: 게임이 끝난 후의 처리해줘야함
     clear() {
 
-        // this.square = null;
-        // this.area = null;
     }
 
     setUserContainer(user1, user2) {
@@ -48,6 +48,7 @@ class OmokGame {
 
         const firstUserContainer = document.createElement("div");
         const userName = document.createElement("span");
+        userName.setAttribute("class", "nameTag");
         const userImg = document.createElement("img");
         userName.innerHTML = user1.userId;
         userImg.setAttribute("src", user1.userImg);
@@ -60,6 +61,7 @@ class OmokGame {
         const secondUserContainer = document.createElement("div");
         const user2Name = document.createElement("span");
         const user2Img = document.createElement("img");
+        user2Name.setAttribute("class", "nameTag");
         user2Name.innerHTML = user2.userId;
         user2Img.setAttribute("src", user2.userImg);
         user2Img.setAttribute("class", "userImg");
@@ -76,6 +78,14 @@ class OmokGame {
                 this.board.appendChild(square);
             }
         }
+    }
+    // TODO : 턴이 바뀔때마다 각 유저의 위치에 화살표가 생기도록 해야함
+    changeTurn() {
+        const turnImg = document.createElement("img");
+        turnImg.setAttribute("class", "turnTag");
+        turnImg.setAttribute("src", "./finger.svg");
+        const firstUserContainer = document.querySelector(".firstUserContainer");
+        firstUserContainer.appendChild(turnImg);
     }
 
     createSquare(i, j) {
@@ -97,6 +107,7 @@ class OmokGame {
 
     putConcave(area) {
         area.addEventListener("mousedown", (e) => {
+            this.changeTurn();
             let impossible = checkAlreadyPutConcave(e);
             if (temp && impossible) {
                 temp.classList.remove("latestPut");
@@ -132,6 +143,8 @@ class OmokGame {
             }
         });
     }
+
+
 }
 
 class Timer {
@@ -160,9 +173,6 @@ class User {
         this.userId = user.userId;
         this.userImg = user.userImg;
     }
-    changeTurn() {
-        console.log("턴바꾸기");
-    }
 }
 
 function startGame() {
@@ -182,7 +192,6 @@ function startTimer() {
     let newTimerImg = document.createElement("img");
     newTimerImg.classList.add("timerImg");
     newTimerImg.src = './timer.svg';
-
     timerImgContainer.appendChild(newTimerImg);
     let remainSeconds = ONE_MINIUTE
     let timerDisplay = document.querySelector('.timer');

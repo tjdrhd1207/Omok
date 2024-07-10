@@ -124,13 +124,31 @@
 
 .firstUserContainer {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center
 }
 
 .secondUserContainer {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center
 }
 
 .userImg {
     width : 200px;
     height: 200px;
+}
+
+.nameTag {
+    font-size: 20px;
+    font-weight: bolder;
+}
+
+.turnTag {
+    width: 100px;
+    transform: rotate(270deg);
 }
